@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตารางเวรตรวจแก้วน้ำดื่ม</title>
+<style>
+:root{--blue:#2563EB;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--bg:#f1f5f9;--violet:#7C3AED;--red:#EF4444}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,"Noto Sans Thai",sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:1240px;margin:0 auto;padding:18px}
+header{background:#1E3A8A;color:#fff;border-radius:12px;padding:18px 22px;margin-bottom:16px}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;font-size:13px;color:#BFDBFE}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 12px;font-size:15px;color:var(--blue)}
+.names{display:flex;gap:8px;flex-wrap:wrap}
+.nbtn{display:flex;align-items:center;gap:8px;border:2px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px 7px 8px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;color:var(--ink)}
+.nbtn .dot{width:16px;height:16px;border-radius:50%;flex:none}
+.nbtn small{font-weight:600;color:var(--muted);font-size:11px}
+.nbtn.on{border-color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.nbtn.all .dot{background:linear-gradient(135deg,#059669,#2563EB,#DC2626)}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.kpi div{background:var(--bg);border-radius:9px;padding:9px 14px;font-size:11px;color:var(--muted);font-weight:700}
+.kpi b{display:block;font-size:19px;color:var(--ink);margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:#1e293b;color:#fff;font-size:12px}
+tbody tr:nth-child(even){background:#f8fafc}
+.satrow td{background:#f5f3ff!important}
+.badge{display:inline-block;color:#fff;border-radius:5px;padding:2px 8px;font-size:12px;font-weight:800}
+.nm{display:inline-flex;align-items:center;gap:7px;font-weight:600}
+.dot{width:13px;height:13px;border-radius:50%;display:inline-block;flex:none}
+.months{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.mon h3{margin:0 0 8px;font-size:14px;background:#334155;color:#fff;border-radius:7px;padding:7px 12px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal .hd{text-align:center;font-size:11px;font-weight:800;color:#fff;background:#64748b;border-radius:4px;padding:3px 0}
+.cal .hd.s0{background:#b91c1c}.cal .hd.s6{background:var(--violet)}
+.cell{min-height:52px;border:1px solid var(--line);border-radius:6px;padding:3px;background:#fff;font-size:11px}
+.cell.blank{border:0;background:transparent}
+.cell.hol{background:#FEE2E2;border-color:#FCA5A5}
+.cell.sun{background:#f1f5f9;border-color:#e2e8f0}
+.cell.out{background:#f8fafc;border-style:dashed}
+.cell.sat{box-shadow:inset 0 0 0 2px var(--violet)}
+.cell.mine{background:#ecfdf5;border-color:#6ee7b7}
+.dnum{font-weight:800;color:#475569;font-size:11px}
+.cell.hol .dnum{color:var(--red)}
+.cell.sun .dnum,.cell.out .dnum{color:#cbd5e1}
+.tag{display:block;color:#fff;border-radius:3px;padding:1px 3px;font-size:9px;font-weight:700;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot{display:inline-block;background:rgba(255,255,255,.85);color:#1e293b;border-radius:2px;padding:0 3px;margin-right:3px;font-size:8px}
+.hint{font-size:12px;color:var(--muted);line-height:1.7;margin-top:10px}
+.btns{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+button.g{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
+button.g:hover{background:var(--bg)}
+@media print{header,.btns,.names{display:none}.card{border:0;padding:0}}
+</style></head><body>
+<div class="wrap">
+<header>
+  <h1>ตารางเวรตรวจแก้ว / ภาชนะน้ำดื่ม</h1>
+  <p>11 พ.ย. 2026 – 31 มี.ค. 2027 • ตรวจ 100% ไม่กำหนดเวลาตรวจ • ทุกวันทำงานมีผู้ตรวจ 4 คน = (กะ A + กะ B) × (WH1 + WH4)</p>
+</header>
+
+<div class="card">
+  <h2>เลือกชื่อเพื่อดูเวรของตัวเอง</h2>
+  <div class="names" id="names"></div>
+</div>
+
+<div class="card" id="panel"></div>
+</div>
+
+<script>
+const DATA = {"people": [{"name": "ณัฐนรี พละเดช", "shift": "A", "wh": "1", "color": "#059669", "count": 66}, {"name": "ธนัทพร พิศเพ็ง", "shift": "A", "wh": "C", "color": "#0891B2", "count": 66}, {"name": "น้ำผึ้ง ทองสิทธิ์", "shift": "A", "wh": "4", "color": "#7C3AED", "count": 66}, {"name": "วงศ์จันทร์ เพ็ชรดี", "shift": "B", "wh": "C", "color": "#2563EB", "count": 50}, {"name": "จินดา หล้าคำ", "shift": "B", "wh": "4", "color": "#D97706", "count": 49}, {"name": "ศรัญญา งามคง", "shift": "B", "wh": "1", "color": "#DB2777", "count": 49}, {"name": "อภิวัฒน์ คำสุวรรณ", "shift": "B", "wh": "1", "color": "#DC2626", "count": 50}], "holidays": {"2026-11": [14, 28], "2026-12": [5, 10, 19, 28, 29, 30, 31], "2027-1": [1, 2, 4, 9, 16, 30], "2027-2": [6, 20, 22, 27], "2027-3": [13, 20, 27]}, "start": "2026-11-11", "end": "2027-03-31", "days": [{"d": "2026-11-11", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-11-12", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-11-13", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-11-16", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-11-17", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-11-18", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-11-19", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-11-20", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-11-21", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-11-23", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-11-24", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-11-25", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-11-26", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-11-27", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-11-30", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-01", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-02", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-03", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-04", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-07", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-08", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-09", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-11", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-12", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-14", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-15", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-16", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-17", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-18", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-21", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-22", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-23", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-24", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2026-12-25", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2026-12-26", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-05", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-06", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-07", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-08", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-11", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-12", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-13", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-14", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-15", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-18", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-19", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-20", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-21", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-22", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-23", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-25", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-26", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-27", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-01-28", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-01-29", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-01", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-02", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-03", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-04", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-05", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-08", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-09", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-10", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-11", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-12", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-13", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-15", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-16", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-17", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-18", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-19", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-23", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-24", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-02-25", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-02-26", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-01", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-02", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-03", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-04", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-05", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-06", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-08", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-09", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-10", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-11", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-12", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-15", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-16", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-17", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-18", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-19", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-22", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-23", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-24", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-25", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-26", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-29", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "ธนัทพร พิศเพ็ง", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}, {"d": "2027-03-30", "slots": {"A1": "ธนัทพร พิศเพ็ง", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "ศรัญญา งามคง", "B4": "จินดา หล้าคำ"}}, {"d": "2027-03-31", "slots": {"A1": "ณัฐนรี พละเดช", "A4": "น้ำผึ้ง ทองสิทธิ์", "B1": "อภิวัฒน์ คำสุวรรณ", "B4": "วงศ์จันทร์ เพ็ชรดี"}}]};
+const TH_M=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+const TH_DOW=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
+const TH_DOW_S=["อา","จ","อ","พ","พฤ","ศ","ส"];
+const SLOTS=["A1","B1","A4","B4"];
+const COL={}; DATA.people.forEach(p=>COL[p.name]=p.color);
+const byDate={}; DATA.days.forEach(r=>byDate[r.d]=r.slots);
+let sel=null;
+
+const months=[[2026,10],[2026,11],[2027,0],[2027,1],[2027,2]];
+const pad=n=>String(n).padStart(2,'0');
+const key=(y,m,d)=>y+'-'+pad(m+1)+'-'+pad(d);
+
+function nameBtns(){
+  const el=document.getElementById('names');
+  let h='<button class="nbtn all'+(sel?'':' on')+'" data-n=""><span class="dot"></span>ทั้งหมด</button>';
+  ['A','B'].forEach(sh=>{
+    DATA.people.filter(p=>p.shift===sh).forEach(p=>{
+      h+='<button class="nbtn'+(sel===p.name?' on':'')+'" data-n="'+p.name+'">'
+       + '<span class="dot" style="background:'+p.color+'"></span>'+p.name
+       + ' <small>กะ '+p.shift+' · '+(p.wh==='C'?'ได้ทั้ง 2':'WH'+p.wh)+'</small></button>';
+    });
+  });
+  el.innerHTML=h;
+  el.querySelectorAll('.nbtn').forEach(b=>b.onclick=()=>{ sel=b.dataset.n||null; nameBtns(); render(); });
+}
+
+function mySlots(d){
+  if(!sel) return null;
+  const s=byDate[d]; if(!s) return null;
+  return SLOTS.filter(k=>s[k]===sel);
+}
+
+function render(){
+  const p = sel ? DATA.people.find(x=>x.name===sel) : null;
+  let h='';
+
+  if(p){
+    const mine=DATA.days.filter(r=>SLOTS.some(k=>r.slots[k]===sel));
+    const perM={};
+    mine.forEach(r=>{const dt=new Date(r.d);const k=dt.getFullYear()+'-'+dt.getMonth();perM[k]=(perM[k]||0)+1;});
+    h+='<h2><span class="dot" style="background:'+p.color+'"></span> เวรของ '+p.name+'</h2>';
+    h+='<div class="kpi"><div>กะ<b>'+p.shift+'</b></div>'
+      +'<div>คลัง<b>'+(p.wh==='C'?'WH1 + WH4':'WH'+p.wh)+'</b></div>'
+      +'<div>จำนวนวันตรวจ<b>'+mine.length+' วัน</b></div>';
+    months.forEach(([y,m])=>{ h+='<div>'+TH_M[m].slice(0,6)+'<b>'+(perM[y+'-'+m]||0)+'</b></div>'; });
+    h+='</div>';
+    h+='<div class="btns"><a class="g" href="print.html" style="text-decoration:none;color:inherit;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:9px 14px;font-weight:700;font-size:13px">📄 แบบพิมพ์ A4</a><button class="g" id="cp">คัดลอกรายการวัน</button><button class="g" onclick="window.print()">พิมพ์</button></div>';
+    h+='<table><thead><tr><th>#</th><th>วันที่</th><th>วัน</th><th>ช่องที่รับผิดชอบ</th></tr></thead><tbody>';
+    mine.forEach((r,i)=>{
+      const dt=new Date(r.d), isSat=dt.getDay()===6;
+      const ks=SLOTS.filter(k=>r.slots[k]===sel);
+      h+='<tr'+(isSat?' class="satrow"':'')+'><td>'+(i+1)+'</td>'
+       +'<td><b>'+pad(dt.getDate())+'/'+pad(dt.getMonth()+1)+'/'+dt.getFullYear()+'</b></td>'
+       +'<td>'+TH_DOW[dt.getDay()]+(isSat?' (เสาร์ทำงาน)':'')+'</td>'
+       +'<td>'+ks.map(k=>'<span class="badge" style="background:'+p.color+'">WH'+k[1]+' กะ '+k[0]+'</span>').join(' ')+'</td></tr>';
+    });
+    h+='</tbody></table>';
+  } else {
+    h+='<h2>ตารางรวมทุกคน</h2>';
+    h+='<div class="kpi"><div>ช่วงเวลา<b>11 พ.ย. 69 – 31 มี.ค. 70</b></div><div>วันตรวจทั้งหมด<b>'+DATA.days.length+' วัน</b></div><div>ช่องตรวจรวม<b>'+(DATA.days.length*4)+' ช่อง</b></div></div>';
+    h+='<div class="btns"><a class="g" href="print.html" style="text-decoration:none;color:inherit;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:9px 14px;font-weight:700;font-size:13px">📄 แบบพิมพ์ A4</a><button class="g" id="cp">คัดลอกตารางทั้งหมด</button><button class="g" onclick="window.print()">พิมพ์</button></div>';
+    h+='<table><thead><tr><th>วันที่</th><th>วัน</th><th>WH1 กะ A</th><th>WH1 กะ B</th><th>WH4 กะ A</th><th>WH4 กะ B</th></tr></thead><tbody>';
+    DATA.days.forEach(r=>{
+      const dt=new Date(r.d), isSat=dt.getDay()===6;
+      h+='<tr'+(isSat?' class="satrow"':'')+'><td><b>'+pad(dt.getDate())+'/'+pad(dt.getMonth()+1)+'</b></td><td>'+TH_DOW[dt.getDay()]+'</td>';
+      SLOTS.forEach(k=>{const n=r.slots[k];h+='<td><span class="nm"><span class="dot" style="background:'+COL[n]+'"></span>'+n.split(' ')[0]+'</span></td>';});
+      h+='</tr>';
+    });
+    h+='</tbody></table>';
+  }
+
+  // calendars
+  h+='<div class="months" style="margin-top:20px">';
+  months.forEach(([y,m])=>{
+    h+='<div class="mon"><h3>'+TH_M[m]+' '+y+'</h3><div class="cal">';
+    TH_DOW_S.forEach((t,i)=>h+='<div class="hd s'+i+'">'+t+'</div>');
+    const first=new Date(y,m,1).getDay(), nd=new Date(y,m+1,0).getDate();
+    const hol=DATA.holidays[y+'-'+(m+1)]||[];
+    for(let i=0;i<first;i++) h+='<div class="cell blank"></div>';
+    for(let d=1;d<=nd;d++){
+      const k=key(y,m,d), dt=new Date(y,m,d), s=byDate[k];
+      let cls='cell', body='<span class="dnum">'+d+'</span>';
+      if(s){
+        const ks = sel ? SLOTS.filter(x=>s[x]===sel) : SLOTS;
+        if(sel && ks.length) cls+=' mine';
+        if(!sel || ks.length){
+          ks.forEach(x=>{const n=s[x];
+            body+='<span class="tag" style="background:'+COL[n]+'"><span class="slot">'+x[1]+x[0]+'</span>'+n.split(' ')[0]+'</span>';});
+        }
+        if(dt.getDay()===6) cls+=' sat';
+      } else if(dt.getDay()===0){ cls+=' sun'; }
+      else if(hol.includes(d)){ cls+=' hol'; body+='<span style="font-size:9px;color:#dc2626;font-weight:800">หยุด</span>'; }
+      else { cls+=' out'; }
+      h+='<div class="'+cls+'">'+body+'</div>';
+    }
+    h+='</div></div>';
+  });
+  h+='</div>';
+  h+='<p class="hint">ป้ายในปฏิทินอ่านว่า WH + กะ เช่น 1A = WH1 กะ A • กรอบม่วง = เสาร์ที่เปิดทำงาน • ช่องแดง = วันหยุดบริษัท • ช่องเทา = อาทิตย์หรือนอกช่วง</p>';
+
+  document.getElementById('panel').innerHTML=h;
+  const cp=document.getElementById('cp');
+  if(cp) cp.onclick=()=>{navigator.clipboard.writeText(tsv()).then(()=>{cp.textContent='คัดลอกแล้ว ✓';setTimeout(()=>cp.textContent=sel?'คัดลอกรายการวัน':'คัดลอกตารางทั้งหมด',1500);});};
+}
+
+function tsv(){
+  if(sel){
+    let o='วันที่\tวัน\tช่อง\n';
+    DATA.days.forEach(r=>{
+      const ks=SLOTS.filter(k=>r.slots[k]===sel); if(!ks.length) return;
+      const dt=new Date(r.d);
+      o+=pad(dt.getDate())+'/'+pad(dt.getMonth()+1)+'/'+dt.getFullYear()+'\t'+TH_DOW[dt.getDay()]+'\t'+ks.map(k=>'WH'+k[1]+' กะ '+k[0]).join(', ')+'\n';
+    });
+    return o;
+  }
+  let o='วันที่\tวัน\tWH1-A\tWH1-B\tWH4-A\tWH4-B\n';
+  DATA.days.forEach(r=>{const dt=new Date(r.d);
+    o+=pad(dt.getDate())+'/'+pad(dt.getMonth()+1)+'/'+dt.getFullYear()+'\t'+TH_DOW[dt.getDay()]+'\t'+SLOTS.map(k=>r.slots[k]).join('\t')+'\n';});
+  return o;
+}
+
+nameBtns(); render();
+</script></body></html>
